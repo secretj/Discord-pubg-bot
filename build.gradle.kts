@@ -21,6 +21,7 @@ repositories {
 dependencies {
     // Spring Boot Starter 의존성들
     implementation("org.springframework.boot:spring-boot-starter:3.0.5")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.0.5")
     
     // Kotlin 의존성
@@ -42,7 +43,7 @@ dependencies {
     // 테스트 의존성
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    runtimeOnly("org.springframework.boot:spring-boot-docker-compose")
+//    runtimeOnly("org.springframework.boot:spring-boot-docker-compose")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     runtimeOnly("com.mysql:mysql-connector-j:9.2.0")
