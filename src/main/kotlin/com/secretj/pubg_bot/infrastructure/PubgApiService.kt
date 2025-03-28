@@ -1,4 +1,4 @@
-package com.secretj.pubg_bot.domain.pubg.application
+package com.secretj.pubg_bot.infrastructure
 
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate

@@ -1,12 +1,10 @@
 package com.secretj.pubg_bot.domain.discord.command.application
 
 import com.secretj.pubg_bot.domain.discord.command.domain.user.dto.request.PlayerStatusDTO
-import com.secretj.pubg_bot.domain.pubg.application.PubgApiService
+import com.secretj.pubg_bot.infrastructure.PubgApiService
 import com.secretj.pubg_bot.domain.discord.command.domain.user.repository.UserRepository
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.entity.Role
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Mono
 
 @Service
 class AutoRoleApplyService(
