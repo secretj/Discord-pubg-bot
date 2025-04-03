@@ -1,5 +1,6 @@
 package com.secretj.pubg_bot.infrastructure
 
+import com.secretj.pubg_bot.domain.discord.command.domain.user.dto.request.PlayerStatusDTO
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForObject
@@ -11,7 +12,7 @@ class PubgApiService(
     private val apiKey = System.getenv("PUBG_API_KEY")
     private val baseUrl = "https://api.pubg.com/shards/steam"
 
-    fun getPlayerStats(pubgId: String): PlayerStatsDTO {
+    fun getPlayerStats(pubgId: String): PlayerStatusDTO {
         val playerUrl = "$baseUrl/players?filter[playerNames]=$pubgId"
         val playerResponse = restTemplate.getForObject<PlayerResponse>(playerUrl, apiKey)
 
@@ -23,22 +24,17 @@ class PubgApiService(
         return convertToPlayerStatsDTO(statsResponse)
     }
 
-    private fun convertToPlayerStatsDTO(statsResponse: StatsResponse): PlayerStatsDTO {
+    private fun convertToPlayerStatsDTO(statsResponse: StatsResponse): PlayerStatusDTO {
         // PUBG API 응답을 기반으로 PlayerStatsDTO 변환 로직
         val gameMode = statsResponse.data.attributes.gameMode
-        return PlayerStatsDTO(
-            kills = gameMode.solo.kills,
-            wins = gameMode.solo.wins,
+        return PlayerStatusDTO(
+            gameMode.solo.wins,
+            gameMode.solo.kills,
+            gameMode.solo.rate,
             // 다른 통계 추가
         )
     }
 }
-
-data class PlayerStatsDTO(
-    val kills: Int,
-    val wins: Int
-    // 다른 통계 필드 추가
-)
 
 // PUBG API 응답 데이터 구조에 맞는 데이터 클래스
 data class PlayerResponse(val data: List<PlayerData>)
@@ -54,7 +50,8 @@ data class GameModeStats(
     val solo: ModeStats
 )
 data class ModeStats(
-    val kills: Int,
-    val wins: Int
+    val kills: Long,
+    val wins: Long,
+    val rate: Int
     // 다른 통계 추가
 )

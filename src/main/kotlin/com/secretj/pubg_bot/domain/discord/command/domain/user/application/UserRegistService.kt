@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service
 class UserRegistService(
     private val userRepository: UserRepository
 ) {
-    fun registUser(resisterUserDTO : ResistUserDTO) {
-        userRepository.save(resisterUserDTO.toEntity())
+    fun registUser(resisterUserDTO : ResistUserDTO): ResistUserDTO {
+        userRepository.save(resisterUserDTO.toEntity());
+        return resisterUserDTO;
     }
 }

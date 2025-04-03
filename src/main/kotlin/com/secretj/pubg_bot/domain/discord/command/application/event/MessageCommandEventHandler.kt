@@ -3,18 +3,18 @@ package com.secretj.pubg_bot.domain.discord.command.application.event
 
 import com.secretj.pubg_bot.domain.discord.command.domain.enum.DiscordRole
 import com.secretj.pubg_bot.domain.discord.command.domain.user.application.UserRegistService
+import com.secretj.pubg_bot.domain.discord.command.domain.user.dto.request.PlayerStatusDTO
 import com.secretj.pubg_bot.domain.discord.command.domain.user.dto.request.ResistUserDTO
-import com.secretj.pubg_bot.infrastructure.PlayerStatsDTO
+import com.secretj.pubg_bot.infrastructure.PubgApiService
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.entity.Message
-import discord4j.core.spec.MessageCreateSpec
-import discord4j.rest.service.UserService
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
 class MessageCommandEventHandler(
-    private val userService: UserRegistService
+    private val userService: UserRegistService,
+    private val pubgApiService: PubgApiService
 ) : DiscordEventHandler<MessageCreateEvent> {
 
     override fun eventType(): Class<MessageCreateEvent> = MessageCreateEvent::class.java
@@ -30,24 +30,25 @@ class MessageCommandEventHandler(
         }
     }
 
+    // 채팅으로 디스코드 ID PUBG ID를 입력받아서 등록하는 기능
     private fun handleRegisterCommand(message: Message): Mono<Void> {
         val parts = message.content.split(" ")
-        if (parts.size != 3) {
+        if (parts.size != 2) {
             return message.channel
-                .flatMap { it.createMessage("올바른 형식: !register <디스코드ID> <PUBG ID>") }
+                .flatMap { it.createMessage("올바른 형식: !register <PUBG ID>") }
                 .then()
         }
 
-        val discordId = message.author.map { it.id.asString() }.block() ?: return Mono.empty()
-        val pubgId = parts[2]
+        val discordId = message.author.map { it.id.asString() } ?: return Mono.empty()
+        val pubgId = parts[1]
 
-
+        // 비동기 처리
         return Mono.fromCallable {
-            userService.registUser(ResistUserDTO(discordId, pubgId))
+            userService.registUser(ResistUserDTO(discordId.toString(), pubgId))
         }
             .flatMap {
                 message.channel.flatMap {
-                    it.createMessage("성공적으로 등록되었습니다: ${it.pubgId}")
+                    it.createMessage("성공적으로 등록되었습니다: $pubgId")
                 }
             }
             .onErrorResume { e ->
@@ -80,17 +81,17 @@ class MessageCommandEventHandler(
             .then()
     }
 
-    private fun formatStatsMessage(stats: PlayerStatsDTO): String = """
+    private fun formatStatsMessage(stats: PlayerStatusDTO): String = """
         PUBG 플레이어 통계:
-        - 킬: ${stats.kills}
-        - 승리: ${stats.wins}
+        - 딜: ${stats.deal}
+        - 승리: ${stats.winRate}
         - 랭크: ${determineRank(stats)}
     """.trimIndent()
 
-    private fun determineRank(stats: PlayerStatsDTO): String = when {
-        stats.kills > 500 && stats.wins > 50 -> DiscordRole.CHALLENGER
-        stats.kills > 250 && stats.wins > 20 -> DiscordRole.MASTER
-        stats.kills > 100 && stats.wins > 10 -> DiscordRole.EXTREME
+    private fun determineRank(stats: PlayerStatusDTO): String = when {
+        stats.deal > 500 && stats.winRate > 50 -> DiscordRole.CHALLENGER
+        stats.deal > 250 && stats.winRate > 20 -> DiscordRole.MASTER
+        stats.deal > 100 && stats.winRate > 10 -> DiscordRole.EXTREME
         else -> DiscordRole.THE_FIRST
     }.toString()
 }
